@@ -1,0 +1,40 @@
+# Dependencies (keep lockfiles)
+node_modules/
+.pnp/
+.pnp.*
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+service-account*.json
+.aws/
+
+# Generated outputs and logs
+build/
+dist/
+coverage/
+.cache/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+
+# Editor and OS files
+.idea/
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Local database dumps; publish only the reviewed demo export
+*.sql
+!database/healthease.sql
+*.dump
+*.bak
