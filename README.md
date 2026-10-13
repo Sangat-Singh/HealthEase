@@ -1,8 +1,8 @@
 # HealthEase – Healthcare Management System
 
-HealthEase is a full-stack doctor appointment management project built with React, Node.js, Express, and MySQL. It connects department discovery, doctor availability, patient registration, and appointment booking through a React interface and a REST API.
+HealthEase is a college full-stack healthcare management project built with React, Node.js, Express, and MySQL. It connects department discovery, doctor availability, patient registration, and appointment booking through a React interface and a REST API.
 
-This is a separately maintained personal copy by Sangat Singh of a collaboratively developed project. It does not claim sole authorship of the original work. See [collaboration and attribution](docs/ATTRIBUTION.md) for provenance and licensing notes.
+Maintained by Sangat Singh from collaboratively developed work. See [attribution and licensing notes](docs/ATTRIBUTION.md).
 
 ## Problem statement and objectives
 
@@ -17,7 +17,7 @@ Objectives include reducing booking steps, displaying available time slots, asso
 - Book through a dedicated form or a doctor-specific dialog; create a patient record before creating the appointment.
 - Generate 30-minute slots from doctor working hours and filter out slots returned by the booked-slot API.
 - Search appointments by email in the browser and display doctor, department, date, time, booking status, and payment status.
-- Provide cancellation and Pay Now UI actions backed by PATCH routes. Both handlers currently have a missing database import; see known issues below.
+- Cancel appointments and mark their payment status as paid through PATCH routes. Pay Now records a status change only; it does not collect money.
 - Provide backend list/create endpoints for departments, doctors, patients, appointments, and payment records.
 - Enforce unique doctor/date/time bookings and appointment working hours through the verified database constraint and trigger.
 - Display success/error notifications with React Toastify.
@@ -44,7 +44,7 @@ React pages -> Axios services -> Express routes -> Controllers -> Models -> MySQ
 
 The frontend uses React state in `App.js` to switch between pages; it does not use a URL router. `src/services/api.js` centralizes HTTP calls to `http://localhost:5000/api`.
 
-The backend mounts resource routers under `/api`. Controllers validate required fields and handle HTTP responses; models perform asynchronous SQL queries through the shared MySQL connection pool. The slots controller queries the pool directly. The appointment PATCH handlers also attempt direct queries but lack the pool import.
+The backend mounts resource routers under `/api`. Controllers validate required fields and handle HTTP responses; models perform asynchronous SQL queries through the shared MySQL connection pool. The slots and appointment PATCH handlers query the pool directly.
 
 ## Project structure
 
@@ -60,8 +60,9 @@ HealthEase/
 │   └── README.md                 # Import/export instructions
 ├── docs/
 │   ├── VALIDATION.md             # Preparation checks and known issues
-│   └── PUBLISHING.md             # Exact publication manifest and exclusions
-│   └── ATTRIBUTION.md            # Collaborative origin and licensing notes
+│   ├── PUBLISHING.md             # Historical initial publication manifest
+│   ├── ATTRIBUTION.md            # Collaborative origin and licensing notes
+│   └── screenshots/             # Local application screenshots
 ├── healthease-frontend/
 │   ├── public/                   # HTML shell, branding, department images
 │   ├── src/
@@ -73,6 +74,7 @@ HealthEase/
 │   └── package-lock.json
 ├── .env.example
 ├── .gitignore
+├── tests/                        # Isolated appointment PATCH route tests
 ├── package.json
 ├── package-lock.json
 └── server.js                     # API entry point
@@ -159,21 +161,25 @@ The frontend has no custom environment variables in the current implementation, 
 
 ### Start the application
 
-Terminal 1, repository root:
+Start MySQL first, then the backend, then the frontend. Keep both VS Code terminals open. The backend reads `PORT=5000` from the root `.env`; the frontend defaults to port **3000** and calls `http://localhost:5000/api`.
 
-```bash
-npm run dev
-# Or: npm start
+Terminal 1, PowerShell in the repository root:
+
+```powershell
+npm.cmd run dev
+# Or: npm.cmd start
 ```
 
-Terminal 2:
+Terminal 2, a separate PowerShell terminal in the repository root:
 
-```bash
+```powershell
 cd healthease-frontend
-npm start
+npm.cmd start
 ```
 
 Open `http://localhost:3000`. Check the API at `http://localhost:5000/api/test`.
+
+If the backend is already running on port 5000, reuse it or stop it in its original terminal with `Ctrl+C` before restarting. If React offers a different port because 3000 is busy, the browser URL will change. MySQL Workbench is a client; the MySQL server service must be running independently.
 
 To build the frontend:
 
@@ -199,8 +205,8 @@ Base URL: `http://localhost:5000/api`. Send JSON bodies with `Content-Type: appl
 | POST | `/patients` | Required: `full_name`, `email`, `phone` |
 | GET | `/appointments` | Lists all appointments with patient name/email, doctor, specialization, and department |
 | POST | `/appointments` | Required: `patient_id`, `doctor_id`, `appointment_date`, `time_slot`; optional: `status` (defaults to `booked`), `payment_status` (defaults to `pending`) |
-| PATCH | `/appointments/:id/cancel` | Intended to set status to `cancelled`; currently fails due to missing `db` import |
-| PATCH | `/appointments/:id/payment` | Body: `payment_status`; currently fails due to missing `db` import |
+| PATCH | `/appointments/:id/cancel` | Sets status to `cancelled` |
+| PATCH | `/appointments/:id/payment` | Body: `payment_status`; frontend sends `paid` |
 | GET | `/payments` | Lists payment records joined with appointment, patient, and doctor details |
 | POST | `/payments` | Required: `appointment_id`, nonzero `amount`, `method`, `status`; optional: `transaction_id` |
 | GET | `/slots?doctor_id=1&appointment_date=2030-01-15` | Both query parameters required; returns an array of booked time strings |
@@ -224,26 +230,41 @@ The API does not accept an email filter for appointments: the frontend fetches t
 
 ## Validation and known issues
 
-Preparation checks and their limits are recorded in [docs/VALIDATION.md](docs/VALIDATION.md).
+Run backend checks from the repository root with `npm.cmd test`. The tests exercise successful and failed cancellation/payment HTTP requests against a mocked pool, without connecting to MySQL or changing records. Build the frontend with `npm.cmd run build` inside `healthease-frontend`. Preparation checks and their limits are recorded in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 - Backend JavaScript syntax checks and the frontend production build passed.
 - The existing frontend test suite fails on Axios ES module parsing before executing any tests. Its starter assertion also expects a removed “learn react” link.
-- Both appointment PATCH handlers reference `db` without importing it. The routes catch the resulting error and return HTTP 500.
 - Patient creation and appointment creation are separate requests. A failed booking may leave a patient row; booking again with the same email can fail on the unique email key.
 - Booked-slot queries include cancelled appointments, and the unique slot constraint also applies to cancelled bookings.
 - Available days are displayed but not enforced during booking. Slot filtering in the browser does not prevent simultaneous requests; the database unique key prevents duplicate slots.
 - There is no authentication or authorization. Appointment search by email is a convenience filter, not access control. CORS currently permits all origins.
 - Pay Now does not create a payment record or invoke a gateway.
+- PATCH handlers do not validate allowed status transitions or check whether the appointment ID exists.
+- The supplied local screenshots show demo catalog inconsistencies (for example, specializations that do not match the selected department). Catalog data should be reviewed before a demonstration.
 
-Application code was preserved during publishing preparation; these issues are documented for follow-up.
+The missing database-pool import in the appointment PATCH controller has been fixed. These remaining limitations are documented for follow-up; live database mutation flows were not exercised during this update.
 
 ## Screenshots
 
-No application screenshots were found. The images under `healthease-frontend/public/` are branding and department illustrations. Future screenshots should use synthetic demo data and show department browsing, doctor listing, booking, and appointment lookup.
+The following screenshots were supplied from a successful local demonstration of department browsing, doctor listing, and booking confirmation. They show the local catalog, which can differ from the synthetic SQL seed.
+
+### Departments
+
+![HealthEase department listing](docs/screenshots/departments.png)
+
+### Doctors
+
+![HealthEase doctor listing and schedules](docs/screenshots/doctors.png)
+
+### Appointment booking confirmation
+
+![Successful appointment booking notification](docs/screenshots/booking-success.png)
+
+The supplied appointment-history screenshot was omitted because it contains an email address and appointment details not confirmed to be synthetic. To add one, capture history using only synthetic patient/contact and appointment data, save it as `docs/screenshots/appointment-history.png`, and review it before publishing.
 
 ## Future improvements
 
-- Repair the appointment PATCH handlers and validate allowed status transitions and affected rows.
+- Validate allowed appointment status transitions and affected rows.
 - Replace the starter test with meaningful UI tests and add API integration tests against an isolated test database.
 - Add authentication, patient authorization, and staff roles before using private records.
 - Validate doctor working days, handle cancelled slot reuse, and use transactional booking with patient lookup/reuse.

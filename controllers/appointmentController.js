@@ -1,4 +1,5 @@
 const Appointment = require('../models/appointmentModel');
+const db = require('../config/db');
 
 // Get all appointments
 const getAppointments = async (req, res) => {

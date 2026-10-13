@@ -1,5 +1,23 @@
 # Repository preparation validation
 
+## Interview demonstration update — October 13, 2026
+
+- Added the missing database-pool import to the appointment controller. No query definitions or database configuration were changed.
+- `npm.cmd test` passed all four PATCH-route scenarios (success and database failure for cancellation and payment status). Node reports five passing tests including the parent test. Tests use HTTP requests against a temporary Express server with a mocked pool; they do not connect to MySQL or change records.
+- The first backend test command also discovered the frontend JSX test; the root script was scoped to the backend test file and rerun successfully.
+- `npm.cmd run build` in the frontend with `CI=true` passed. Browserslist still reports stale browser data.
+- `npm.cmd test -- --watchAll=false --runInBand` in the frontend with `CI=true` still fails on Axios ES module parsing before any tests execute. The existing starter assertion also needs replacement. Frontend source and dependencies were not changed.
+- Department listing, doctor listing, appointment booking, and appointment-history display were reported as working by the user in the local demo. This update did not perform live booking, cancellation, or payment-status mutations.
+- Three supplied screenshots were added. The appointment-history screenshot was excluded because it includes contact and appointment information not confirmed as synthetic.
+- The README documents current setup, ports, architecture, screenshots, and limitations. Database records, configuration, original backup, licensing, and existing Git history were preserved.
+- Backend syntax checks passed for all 19 files. No backend was listening on port 5000 during the direct health check. Read-only MySQL metadata checks confirmed all five application tables and the columns used by the PATCH handlers.
+- A fresh-source smoke check then loaded the application on a temporary loopback port, received the expected HTTP 200 response from `/api/test`, and closed the server. No database-backed mutation endpoint was called.
+- An attempt to prepare (without executing) the UPDATE statements inside a read-only transaction was rejected by MySQL's read-only protection. No updates were executed; the follow-up database check used metadata SELECTs only. Live mutation behavior remains untested.
+
+The sections below record the initial preparation. Their missing-import findings are historical and have been addressed by this update; other limitations remain unless stated above.
+
+## Initial preparation (historical)
+
 Checks performed on October 13, 2026 with Node.js 22.15.0 and npm 10.9.2. These checks used the existing installed dependencies; no dependency installation or upgrade was performed. Application source was not rewritten.
 
 | Check | Result |

@@ -1,6 +1,6 @@
 # Personal GitHub publishing review
 
-Prepared October 13, 2026. Publication is pending explicit user approval of this exact file list, destination, and visibility.
+Historical record of the initial 60-file publication on October 13, 2026, completed after explicit approval. The current repository tree and later commits also include interview-demo updates; this initial manifest is not the current file list.
 
 - GitHub account: **Sangat-Singh**.
 - Destination: https://github.com/Sangat-Singh/HealthEase
@@ -96,6 +96,6 @@ A complete sibling backup was made before changing Git history. All 51,669 files
 
 ## Approval and validation
 
-Review this complete file list, [the README](../README.md), [the SQL export](../database/healthease.sql), and [validation results](VALIDATION.md). Explicit approval must confirm this **public personal destination** and the manifest. No push has been performed. Authentication must use the existing Git setup; never supply a password or token in chat.
+The initial snapshot was approved and published to the **public personal destination**. Subsequent updates preserve that history and use ordinary pushes. Authentication uses the existing Git setup; never supply a password or token in chat. See [the README](../README.md), [the SQL export](../database/healthease.sql), and [current validation results](VALIDATION.md).
 
-Backend syntax, the API status route, and frontend production build passed during the original preparation. Existing frontend tests fail before execution, existing appointment PATCH handlers have a missing database import, and database restoration remains untested. Application code was preserved as requested.
+Backend syntax, the API status route, and frontend production build passed during the original preparation. Frontend tests failed before execution, the appointment PATCH handlers then lacked a database import, and database restoration was untested. The import was subsequently fixed and covered by isolated route tests; current results are recorded in VALIDATION.md.
